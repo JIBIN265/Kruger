@@ -5,13 +5,15 @@ class InvCatalogService extends cds.ApplicationService {
     async init() {
         const {
             Invoices,
-            Items
+            Items,
+            DetailInvoices,
+            Contacts
         } = this.entities;
 
         const db = await cds.connect.to("db");
         const ecc = await cds.connect.to('ZSD_SRA021_SRV');
      
-        this.on('READ', [Invoices,Items], async req => {
+        this.on('READ', [Invoices,Items,DetailInvoices,Contacts], async req => {
             return ecc.run(req.query);
         });
     

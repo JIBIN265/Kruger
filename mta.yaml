@@ -1,181 +1,182 @@
 _schema-version: "3.1"
 ID: kruger
 description: Supplier Invoice
-version: 1.0.20
+version: 1.0.24
 modules:
-- name: kruger-srv
-  type: nodejs
-  path: gen/srv
-  requires:
-  - name: kruger-db
-  - name: kruger-auth
-  - name: kruger-logs
-  - name: kruger-connectivity
-  - name: kruger-destination-service
-  provides:
-  - name: srv-api
-    properties:
-      srv-url: ${default-url}
-  parameters:
-    buildpack: nodejs_buildpack
-    readiness-health-check-http-endpoint: /health
-    readiness-health-check-type: http
-  build-parameters:
-    builder: npm
-- name: kruger-db-deployer
-  type: hdb
-  path: gen/db
-  requires:
-  - name: kruger-db
-  - name: kruger-logs
-  parameters:
-    buildpack: nodejs_buildpack
-- name: kruger-destination-content
-  type: com.sap.application.content
-  requires:
-  - name: kruger-destination-service
-    parameters:
-      content-target: true
-  - name: kruger-repo-host
-    parameters:
-      service-key:
-        name: kruger-repo-host-key
-  - name: kruger-auth
-    parameters:
-      service-key:
-        name: uaa_kruger-key
-  parameters:
-    content:
-      instance:
-        destinations:
-        - Name: hana_app_kruger_repo_host
-          ServiceInstanceName: kruger-html5-srv
-          ServiceKeyName: kruger-repo-host-key
-          sap.cloud.service: hana.app
-        - Authentication: OAuth2UserTokenExchange
-          Name: hana_app_uaa_kruger
-          ServiceInstanceName: kruger-xsuaa-service
-          ServiceKeyName: uaa_kruger-key
-          sap.cloud.service: hana.app
-        existing_destinations_policy: ignore
-  build-parameters:
-    no-source: true
-- name: kruger-router
-  type: approuter.nodejs
-  path: app/router
-  requires:
-  - name: srv-api
-    group: destinations
-    properties:
-      forwardAuthToken: true
-      name: srv-api
-      url: ~{srv-url}
-  - name: kruger-auth
-  - name: kruger-destination-service
-    group: destinations
-    properties:
-      forwardAuthToken: false
-      name: ui5
-      url: https://ui5.sap.com
-  parameters:
-    disk-quota: 256M
-    keep-existing-routes: true
-    memory: 256M
-  build-parameters:
-    ignore:
-    - .env
-    - node_modules/
-    - default-env.json
-- name: kruger-app-content
-  type: com.sap.application.content
-  path: .
-  requires:
-  - name: kruger-repo-host
-    parameters:
-      content-target: true
-  build-parameters:
-    build-result: resources
+  - name: kruger-srv
+    type: nodejs
+    path: gen/srv
     requires:
-    - artifacts:
-      - kruger.zip
-      name: kruger
-      target-path: resources/
-- name: kruger
-  type: html5
-  path: app/kruger
-  build-parameters:
-    build-result: dist
-    builder: custom
-    commands:
-    - npm install
-    - npm run build:cf
-    supported-platforms: []
-resources:
-- name: kruger-db
-  type: com.sap.xs.hdi-container
-  parameters:
-    service: hana
-    service-plan: hdi-shared
-- name: kruger-auth
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      tenant-mode: dedicated
-      xsappname: kruger-${org}-${space}
-    path: ./xs-security.json
-    service: xsuaa
-    service-name: kruger-xsuaa-service
-    service-plan: application
-- name: kruger-destination-service
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      HTML5Runtime_enabled: true
-      init_data:
+      - name: kruger-db
+      - name: kruger-auth
+      - name: kruger-logs
+      - name: kruger-connectivity
+      - name: kruger-destination-service
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    parameters:
+      buildpack: nodejs_buildpack
+      readiness-health-check-http-endpoint: /health
+      readiness-health-check-type: http
+    build-parameters:
+      builder: npm
+  - name: kruger-db-deployer
+    type: hdb
+    path: gen/db
+    requires:
+      - name: kruger-db
+      - name: kruger-logs
+    parameters:
+      buildpack: nodejs_buildpack
+  - name: kruger-destination-content
+    type: com.sap.application.content
+    requires:
+      - name: kruger-destination-service
+        parameters:
+          content-target: true
+      - name: kruger-repo-host
+        parameters:
+          service-key:
+            name: kruger-repo-host-key
+      - name: kruger-auth
+        parameters:
+          service-key:
+            name: uaa_kruger-key
+    parameters:
+      content:
         instance:
           destinations:
-          - Authentication: NoAuthentication
-            HTML5.DynamicDestination: true
-            HTML5.ForwardAuthToken: true
-            Name: kruger-srv
-            ProxyType: Internet
-            Type: HTTP
-            URL: ~{srv-api/srv-url}
-          - Authentication: NoAuthentication
-            Name: ui5
-            ProxyType: Internet
-            Type: HTTP
-            URL: https://ui5.sap.com
-          existing_destinations_policy: update
-      version: 1.0.0
-    service: destination
-    service-name: kruger-destination-service
-    service-plan: lite
-  requires:
-  - name: srv-api
-- name: kruger-repo-host
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: html5-apps-repo
-    service-name: kruger-html5-srv
-    service-plan: app-host
-- name: kruger-logs
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: application-logs
-    service-plan: lite
-- name: kruger-connectivity
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: connectivity
-    service-plan: lite
+            - Name: hana_app_kruger_repo_host
+              ServiceInstanceName: kruger-html5-srv
+              ServiceKeyName: kruger-repo-host-key
+              sap.cloud.service: hana.app
+            - Authentication: OAuth2UserTokenExchange
+              Name: hana_app_uaa_kruger
+              ServiceInstanceName: kruger-xsuaa-service
+              ServiceKeyName: uaa_kruger-key
+              sap.cloud.service: hana.app
+          existing_destinations_policy: ignore
+    build-parameters:
+      no-source: true
+  - name: kruger-router
+    type: approuter.nodejs
+    path: app/router
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          forwardAuthToken: true
+          name: srv-api
+          url: ~{srv-url}
+      - name: kruger-auth
+      - name: kruger-destination-service
+        group: destinations
+        properties:
+          forwardAuthToken: false
+          name: ui5
+          url: https://ui5.sap.com
+    parameters:
+      disk-quota: 256M
+      keep-existing-routes: true
+      memory: 256M
+    build-parameters:
+      ignore:
+        - .env
+        - node_modules/
+        - default-env.json
+  - name: kruger-app-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: kruger-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - artifacts:
+            - kruger.zip
+          name: kruger
+          target-path: resources/
+  - name: kruger
+    type: html5
+    path: app/kruger
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms:
+        []
+resources:
+  - name: kruger-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: kruger-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      config:
+        tenant-mode: dedicated
+        xsappname: kruger-${org}-${space}
+      path: ./xs-security.json
+      service: xsuaa
+      service-name: kruger-xsuaa-service
+      service-plan: application
+  - name: kruger-destination-service
+    type: org.cloudfoundry.managed-service
+    parameters:
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            destinations:
+              - Authentication: NoAuthentication
+                HTML5.DynamicDestination: true
+                HTML5.ForwardAuthToken: true
+                Name: kruger-srv
+                ProxyType: Internet
+                Type: HTTP
+                URL: ~{srv-api/srv-url}
+              - Authentication: NoAuthentication
+                Name: ui5
+                ProxyType: Internet
+                Type: HTTP
+                URL: https://ui5.sap.com
+            existing_destinations_policy: update
+        version: 1.0.0
+      service: destination
+      service-name: kruger-destination-service
+      service-plan: lite
+    requires:
+      - name: srv-api
+  - name: kruger-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-name: kruger-html5-srv
+      service-plan: app-host
+  - name: kruger-logs
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: application-logs
+      service-plan: lite
+  - name: kruger-connectivity
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: connectivity
+      service-plan: lite
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
 build-parameters:
   before-all:
-  - builder: custom
-    commands:
-    - npm ci
-    - npx cds build --production
-    - npx rimraf gen/db/src/gen/data
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+        - npx rimraf gen/db/src/gen/data
