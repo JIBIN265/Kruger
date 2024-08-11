@@ -1,7 +1,7 @@
 _schema-version: "3.1"
 ID: kruger
 description: Supplier Invoice
-version: 1.0.24
+version: 1.0.26
 modules:
   - name: kruger-srv
     type: nodejs

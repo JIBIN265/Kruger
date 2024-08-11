@@ -151,10 +151,12 @@
                                         "type": "ResponsiveTable",
                                         "enableExport": true,
                                         "selectAll": true,
-                                        "selectionMode": "Multi"
+                                        "selectionMode": "Multi",
+                                        "condensedTableLayout": true
                                     }
                                 }
-                            }
+                            },
+                            "initialLoad": "Enabled"
                         }
                     },
                     "controlAggregation": "beginColumnPages",

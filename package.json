@@ -37,8 +37,9 @@
     "undeploy": "cf undeploy kruger --delete-services --delete-service-keys --delete-service-brokers",
     "build": "rimraf resources mta_archives && mbt build --mtar archive",
     "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
-    "clean": "rimraf \"**/*mta_archives\" \"**/*gen\" \"**/*resources\" \"**/*dist\" \"**/*node_modules\"",
-    "watch-kruger": "cds watch --open kruger/webapp/index.html?sap-ui-xx-viewCache=false"
+    "clean": "rimraf \"**/*mta_archives\" \"**/*gen\" \"**/*resources\" \"**/*dist\" \"**/*node_modules\" \"**/*package-lock.json\"",
+    "watch-kruger": "cds watch --open kruger/webapp/index.html?sap-ui-xx-viewCache=false",
+    "all": "npm run cds && npm run build && npm run deploy"
   },
   "cds": {
     "requires": {
